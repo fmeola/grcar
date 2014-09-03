@@ -48,12 +48,17 @@ public class Grcar {
 				System.arraycopy(mat[j], i + 1, temp[j - 1], i, mat[0].length
 						- i - 1);
 			}
-			result += mat[0][i] * Math.pow(-1, i) * determinant(temp);
+			if(mat[0][i]!=0){
+				result += mat[0][i] * Math.pow(-1, i) * determinant(temp);				
+			}
 		}
 		return result;
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(determinant(getGrcarMatrix(10)));
+		long start= System.currentTimeMillis();
+		System.out.println(determinant(getGrcarMatrix(20)));
+		long end= System.currentTimeMillis();
+		System.out.println((end-start));
 	}
 }
