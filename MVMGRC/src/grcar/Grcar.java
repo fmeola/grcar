@@ -56,9 +56,23 @@ public class Grcar {
 	}
 	
 	public static void main(String[] args) {
+		int n= 15;
 		long start= System.currentTimeMillis();
-		System.out.println(determinant(getGrcarMatrix(20)));
+		System.out.println(determinant(traspose(getGrcarMatrix(n))));
 		long end= System.currentTimeMillis();
 		System.out.println((end-start));
+		System.out.println("-------------------");
+		start= System.currentTimeMillis();
+		System.out.println(determinant(getGrcarMatrix(n)));
+		end= System.currentTimeMillis();
+		System.out.println((end-start));
+	}
+
+	private static int[][] traspose(int[][] mat) {
+		int [][] aux = new int[mat.length][mat[0].length];
+		for (int i = 0; i < mat[0].length; i++)
+			for (int j = 0; j < mat.length; j++)
+				aux[i][j]=mat[j][i];
+		return aux;				
 	}
 }
