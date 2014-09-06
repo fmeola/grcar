@@ -1,12 +1,15 @@
 package grcar;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Grcar {
 
+	private static final double E = 0.00001;
+	private static final long MAX_ITERATIONS = 10000;
 	public static double[][] getGrcarMatrix(int n){
 		int k = 3;
 		double [][] matrix = new double[n][n];
@@ -177,15 +180,27 @@ public class Grcar {
 	}
 	
 	public static List<Complex> eig(double[][] m){
-		if(determinant(m) == 0)
-			return null;
+		double last = 0;
+//		if(determinant(m) == 0)
+//			return null;
 		List<Complex> eigs = new ArrayList<Complex>();
 		if(m.length == 2 && m[0].length == 2)
 			return roots(1,-m[0][0] -m[1][1], determinant(m));
-		double[][] T = m.clone();
-		for(int k = 0; k < 1000; k++){
+		double[][] T = m;
+		for(int k = 0; k < MAX_ITERATIONS; k++){
 			Map<String,double[][]> qr = QR(T);
 			T = matrixprod(qr.get("R"),qr.get("Q"));
+			// Primer cuadrado
+			double[][] aux = new double[2][2]; 
+			aux[0][0] = T[0][0];
+			aux[0][1] = T[0][1];
+			aux[1][0] = T[1][0];
+			aux[1][1] = T[1][1];
+			double detaux = determinant(aux);
+//			if((detaux - last) < E){
+//				break;
+//			}
+//			last = detaux;
 		}
 		for(int i = 0; i < m.length - m.length % 2; i += 2){
 			double[][] aux = new double[2][2]; 
@@ -202,14 +217,25 @@ public class Grcar {
 	}
 	
 	public static void main(String[] args) {
-		int n = 5;
-		System.out.println("GRCAR " + n + "x" + n);
+		long init= System.currentTimeMillis();
+		int n = 50;
+//		System.out.println("GRCAR " + n + "x" + n);
 		double[][] grcar = getGrcarMatrix(n);
-		printMatrix(grcar);
+//		printMatrix(grcar);
 		System.out.println("\nAutovalores");
 		List<Complex> eigs = eig(grcar);
+		eigs.sort(new Comparator<Complex>() {
+
+			@Override
+			public int compare(Complex o1, Complex o2) {
+				return (int)Math.signum(o1.getReal() - o2.getReal());
+			}
+			
+		});
 		for(Complex e : eigs){
 			System.out.println(e);
 		}
+		long end = System.currentTimeMillis();
+		System.out.println((end-init)/1000);
 	}
 }

@@ -23,4 +23,11 @@ public class Complex {
 		return new Complex(real, -img);
 	}
 
+	public double mod() {
+		return Math.sqrt(real * real + img * img);
+	}
+	
+	public double getReal(){
+		return real;
+	}
 }
