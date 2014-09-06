@@ -59,63 +59,6 @@ public class Grcar {
 		return result;
 	}
 	
-	public static void main(String[] args) {
-//		int n = 15;
-//		printMatrix(getGrcarMatrix(n));
-//		long start= System.currentTimeMillis();
-//		System.out.println(determinant(traspose(getGrcarMatrix(n))));
-//		long end= System.currentTimeMillis();
-//		System.out.println((end-start));
-//		System.out.println("-------------------");
-//		start= System.currentTimeMillis();
-//		System.out.println(determinant(getGrcarMatrix(n)));
-//		end= System.currentTimeMillis();
-//		System.out.println((end-start));
-//		System.out.println(roots(2, 3, 4)[0]);
-//		System.out.println(roots(2, 3, 4)[1]);
-//		double[][] matrix = new double[2][2];
-//		matrix[0][0] = 1.2565;
-//		matrix[0][1] = 1.0185;
-//		matrix[1][0] = -1.0826;
-//		matrix[1][1] = 1.4064;
-//		System.out.println(eigMatrix2(matrix)[0]);
-//		System.out.println(eigMatrix2(matrix)[1]);
-//		double[] b = {0.71637,0.62091,0.62556};
-//		System.out.println(norm2(b));
-//		double[][] x = {{0.70016,0.33394,0.78501},{0.48998,0.19624,0.92100}};
-//		double[][] y = {{0.712111},{0.047847},{0.650948}};
-//		printMatrix(matrixprod(x,y));
-//		double[] x = {0.81400,0.16056,0.28492};
-//		double[] y = {0.41281,0.46494,0.28367};
-//		double[] x = {0,1};
-//		double[] y = {1,0};
-//		System.out.println(prodInt(x,y));
-//		double[] x = {3, 2, 4};
-//		for(double d : prodVectEsc(x, 2))
-//			System.out.print(d + " ");
-//		double[][] x = {{0.70016,0.33394,0.78501},{0.48998,0.19624,0.92100}};
-//		double[] r = getColumn(x, 2);
-//		for(double d : r){
-//			System.out.print(d + " ");
-//		}
-//		double[][] aux = { {1,2,3,1},{1,1,2,2},{2,1,1,2},{4,1,3,1 }};
-//		auxQR(aux);
-		int n = 5;
-		double[][] m = getGrcarMatrix(n);
-		System.out.println("GRCAR " + n + "x" + n);
-		printMatrix(m);
-		System.out.println();
-		Map<String, double[][]> qr = QR(m);
-		System.out.println("Q = ");
-		printMatrix(qr.get("Q"));
-		System.out.println();
-		System.out.println("R = ");
-		printMatrix(qr.get("R"));
-		System.out.println();
-		System.out.println("Q * R =");
-		printMatrix(matrixprod(qr.get("Q"),qr.get("R")));
-	}
-	
 	private static double[][] traspose(double[][] mat) {
 		double [][] aux = new double[mat[0].length][mat.length];
 		for (int i = 0; i < mat[0].length; i++)
@@ -124,26 +67,18 @@ public class Grcar {
 		return aux;				
 	}
 	
-	private static Complex[] roots(double a, double b, double c){
+	private static List<Complex> roots(double a, double b, double c){
 		// No puede ser a = 0 pues la matriz grcar tiene inversa siempre
-		Complex[] res = new Complex[2];
+		List<Complex> res = new ArrayList<Complex>();
 		double x = (b * b) - (4 * a * c);
 		if(x > 0){
-			res[0] = new Complex(((-b + Math.sqrt(x))/2*a),0);
-			res[1] = new Complex(((-b - Math.sqrt(x))/2*a),0);
+			res.add(0,new Complex(((-b + Math.sqrt(x))/2*a),0));
+			res.add(1,new Complex(((-b - Math.sqrt(x))/2*a),0));
 		} else {
-			res[0] = new Complex(-b/(2*a),Math.sqrt(Math.abs(x))/(2*a));
-			res[1] = res[0].conjugate();
+			res.add(0,new Complex(-b/(2*a),Math.sqrt(Math.abs(x))/(2*a)));
+			res.add(1,res.get(0).conjugate());
 		}
 		return res;
-	}
-	
-	private static Complex[] eigMatrix2(double[][] m){
-		if(m.length != 2 || m[0].length != 2){
-			// ver excepción
-			return null;
-		}
-		return roots(1,-m[0][0] -m[1][1], determinant(m));
 	}
 	
 	private static double norm2(double[] v){
@@ -241,4 +176,40 @@ public class Grcar {
 		return res;
 	}
 	
+	public static List<Complex> eig(double[][] m){
+		if(determinant(m) == 0)
+			return null;
+		List<Complex> eigs = new ArrayList<Complex>();
+		if(m.length == 2 && m[0].length == 2)
+			return roots(1,-m[0][0] -m[1][1], determinant(m));
+		double[][] T = m.clone();
+		for(int k = 0; k < 1000; k++){
+			Map<String,double[][]> qr = QR(T);
+			T = matrixprod(qr.get("R"),qr.get("Q"));
+		}
+		for(int i = 0; i < m.length - m.length % 2; i += 2){
+			double[][] aux = new double[2][2]; 
+			aux[0][0] = T[i][i];
+			aux[0][1] = T[i][i+1];
+			aux[1][0] = T[i+1][i];
+			aux[1][1] = T[i+1][i+1];
+			eigs.addAll(eig(aux));
+		}
+		if(m.length % 2 == 1){
+			eigs.add(new Complex(T[T.length-1][T.length-1],0));
+		}
+		return eigs;
+	}
+	
+	public static void main(String[] args) {
+		int n = 5;
+		System.out.println("GRCAR " + n + "x" + n);
+		double[][] grcar = getGrcarMatrix(n);
+		printMatrix(grcar);
+		System.out.println("\nAutovalores");
+		List<Complex> eigs = eig(grcar);
+		for(Complex e : eigs){
+			System.out.println(e);
+		}
+	}
 }
