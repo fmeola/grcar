@@ -1,13 +1,15 @@
 package grcar;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Grcar {
 
-	public static int[][] getGrcarMatrix(int n){
+	public static double[][] getGrcarMatrix(int n){
 		int k = 3;
-		int [][] matrix = new int[n][n];
+		double [][] matrix = new double[n][n];
 		for(int i = 0; i < n; i++){
 			for(int j = 0; j < n; j++){
 				if(i == j){
@@ -28,9 +30,9 @@ public class Grcar {
 		for(int i = 0; i < matrix.length; i++){
 			for(int j = 0; j < matrix[0].length; j++){
 				if(matrix[i][j] < 0){
-					System.out.print(" " + matrix[i][j]);
+					System.out.printf(" %.5f", matrix[i][j]);
 				} else {
-					System.out.print("  " + matrix[i][j]);
+					System.out.printf("  %.5f" , matrix[i][j]);
 				}
 			}
 			System.out.println();
@@ -96,8 +98,22 @@ public class Grcar {
 //		for(double d : r){
 //			System.out.print(d + " ");
 //		}
-		double[][] aux = { { 1, 2, 3 }, { 1, 1, 2 }, { 2, 1, 1 } };
-		auxQR(aux);
+//		double[][] aux = { {1,2,3,1},{1,1,2,2},{2,1,1,2},{4,1,3,1 }};
+//		auxQR(aux);
+		int n = 5;
+		double[][] m = getGrcarMatrix(n);
+		System.out.println("GRCAR " + n + "x" + n);
+		printMatrix(m);
+		System.out.println();
+		Map<String, double[][]> qr = QR(m);
+		System.out.println("Q = ");
+		printMatrix(qr.get("Q"));
+		System.out.println();
+		System.out.println("R = ");
+		printMatrix(qr.get("R"));
+		System.out.println();
+		System.out.println("Q * R =");
+		printMatrix(matrixprod(qr.get("Q"),qr.get("R")));
 	}
 	
 	private static double[][] traspose(double[][] mat) {
@@ -191,33 +207,29 @@ public class Grcar {
 		return res;
 	}
 	
-	private static void auxQR(double[][] m){
+	private static Map<String, double[][]> QR(double[][] m){
+		Map<String,double[][]> res = new HashMap<String,double[][]>();
+		double[][] Q = new double[m.length][m.length];
+		double[][] R = new double[m.length][m[0].length];
 		List<double[]> q = new ArrayList<double[]>();
-		List<Double> prodInt = new ArrayList<Double>();
-		List<Double> normas = new ArrayList<Double>();
 		for(int k = 0; k < m[0].length; k++){
 			double[] v = getColumn(m,k);
 			double[] e = v;
 			for(int n = 0; n < q.size(); n++){
 				double p = prodInt(v, q.get(n));
-				prodInt.add(p);
-				// Las restas de los productos internos
 				e = sumVec(e,prodVectEsc(q.get(n), -p ));
+				R[n][k] = p;
 			}
 			double norm2e = norm2(e);
-			normas.add(norm2e);
+			R[k][k] = norm2e;
 			e = prodVectEsc(e, 1 / norm2e);
 			q.add(e);
+			for(int i = 0; i < e.length; i++)
+				Q[i][k] = e[i];
 		}
-		for(double[] x : q){
-			for(double d : x){
-				System.out.print(d + " ");
-			}
-			System.out.println();
-		}
-//		System.out.println(q);
-		System.out.println(prodInt);
-		System.out.println(normas);
+		res.put("Q", Q);
+		res.put("R", R);
+		return res;
 	}
 	
 	private static double[] sumVec(double[] v1, double[] v2){
