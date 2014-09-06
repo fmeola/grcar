@@ -1,6 +1,7 @@
 package grcar;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Grcar {
 
@@ -82,9 +83,21 @@ public class Grcar {
 //		double[][] x = {{0.70016,0.33394,0.78501},{0.48998,0.19624,0.92100}};
 //		double[][] y = {{0.712111},{0.047847},{0.650948}};
 //		printMatrix(matrixprod(x,y));
-		double[] x = {0.81400,0.16056,0.28492};
-		double[] y = {0.41281,0.46494,0.28367};
-		System.out.println(prodInt(x,y));
+//		double[] x = {0.81400,0.16056,0.28492};
+//		double[] y = {0.41281,0.46494,0.28367};
+//		double[] x = {0,1};
+//		double[] y = {1,0};
+//		System.out.println(prodInt(x,y));
+//		double[] x = {3, 2, 4};
+//		for(double d : prodVectEsc(x, 2))
+//			System.out.print(d + " ");
+//		double[][] x = {{0.70016,0.33394,0.78501},{0.48998,0.19624,0.92100}};
+//		double[] r = getColumn(x, 2);
+//		for(double d : r){
+//			System.out.print(d + " ");
+//		}
+		double[][] aux = { { 1, 2, 3 }, { 1, 1, 2 }, { 2, 1, 1 } };
+		auxQR(aux);
 	}
 	
 	private static double[][] traspose(double[][] mat) {
@@ -161,4 +174,59 @@ public class Grcar {
 		auxy[0]= y;
 		return matrixprod(auxy,traspose(auxx))[0][0];
 	}
+	
+	private static double[] prodVectEsc(double[] v, double x){
+		double[] res = new double[v.length];
+		for(int i = 0; i < v.length; i++){
+			res[i] = v[i] * x; 
+		}
+		return res;
+	}
+	
+	private static double[] getColumn(double[][] m, int n){
+		double[] res = new double[m.length];
+		for(int i = 0; i < m.length; i++){
+			res[i] = m[i][n];
+		}
+		return res;
+	}
+	
+	private static void auxQR(double[][] m){
+		List<double[]> q = new ArrayList<double[]>();
+		List<Double> prodInt = new ArrayList<Double>();
+		List<Double> normas = new ArrayList<Double>();
+		for(int k = 0; k < m[0].length; k++){
+			double[] v = getColumn(m,k);
+			double[] e = v;
+			for(int n = 0; n < q.size(); n++){
+				double p = prodInt(v, q.get(n));
+				prodInt.add(p);
+				// Las restas de los productos internos
+				e = sumVec(e,prodVectEsc(q.get(n), -p ));
+			}
+			double norm2e = norm2(e);
+			normas.add(norm2e);
+			e = prodVectEsc(e, 1 / norm2e);
+			q.add(e);
+		}
+		for(double[] x : q){
+			for(double d : x){
+				System.out.print(d + " ");
+			}
+			System.out.println();
+		}
+//		System.out.println(q);
+		System.out.println(prodInt);
+		System.out.println(normas);
+	}
+	
+	private static double[] sumVec(double[] v1, double[] v2){
+		double[] res = new double[v1.length];
+		// Ver salir por no tener la misma dim
+		for(int i = 0; i < v1.length; i++){
+			res[i] = v1[i] + v2[i];
+		}
+		return res;
+	}
+	
 }
