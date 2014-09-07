@@ -8,8 +8,9 @@ import java.util.Map;
 
 public class Grcar {
 
-	// private static final double E = 0.00001;
+	private static final double E = 0.00001;
 	private static final long MAX_ITERATIONS = 10000;
+	private static final int CHECK_FREQUENCY = 5;
 
 	public static double[][] getGrcarMatrix(int n) {
 		int k = 3;
@@ -177,21 +178,28 @@ public class Grcar {
 		List<Complex> eigs = new ArrayList<Complex>();
 		if (m.length == 2 && m[0].length == 2)
 			return roots(1, -m[0][0] - m[1][1], determinant(m));
+		double [] dets = new double[(m.length)/2];
 		double[][] T = m;
-		for (int k = 0; k < MAX_ITERATIONS; k++) {
+		boolean flag = false;
+		for (int k = 0; k < MAX_ITERATIONS && !flag; k++) {
 			Map<String, double[][]> qr = QR(T);
 			T = matrixprod(qr.get("R"), qr.get("Q"));
-			// Primer cuadrado
-			double[][] aux = new double[2][2];
-			aux[0][0] = T[0][0];
-			aux[0][1] = T[0][1];
-			aux[1][0] = T[1][0];
-			aux[1][1] = T[1][1];
-			// double detaux = determinant(aux);
-			// if((detaux - last) < E){
-			// break;
-			// }
-			// last = detaux;
+			
+			if( k % (m.length*CHECK_FREQUENCY) == 0){
+				double[][] current = new double[2][2];
+				flag = true;
+				for (int i = 0; i < m.length - m.length % 2; i += 2) {
+					current[0][0] = T[i][i];
+					current[0][1] = T[i][i + 1];
+					current[1][0] = T[i + 1][i];
+					current[1][1] = T[i + 1][i + 1];
+					double currentdet = determinant(current);
+					if(Math.abs(dets[i/2]-currentdet) > E){
+						flag = false;
+					}
+					dets[i/2]=currentdet;
+				}
+			}
 		}
 		for (int i = 0; i < m.length - m.length % 2; i += 2) {
 			double[][] aux = new double[2][2];
@@ -209,7 +217,7 @@ public class Grcar {
 
 	public static void main(String[] args) {
 		long init = System.currentTimeMillis();
-		int n = 20;
+		int n = 50;
 		System.out.println("GRCAR " + n + "x" + n);
 		double[][] grcar = getGrcarMatrix(n);
 		// printMatrix(grcar);
