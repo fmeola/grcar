@@ -8,9 +8,9 @@ import java.util.Map;
 
 public class Grcar {
 
-	private static final double E = 0.00001;
+	private static final double E = 0.0001;
 	private static final long MAX_ITERATIONS = 10000;
-	private static final int CHECK_FREQUENCY = 5;
+	private static final int CHECK_FREQUENCY = 1;
 
 	public static double[][] getGrcarMatrix(int n) {
 		int k = 3;
@@ -73,7 +73,6 @@ public class Grcar {
 	}
 
 	private static List<Complex> roots(double a, double b, double c) {
-		// No puede ser a = 0 pues la matriz grcar tiene inversa siempre
 		List<Complex> res = new ArrayList<Complex>();
 		double x = (b * b) - (4 * a * c);
 		if (x > 0) {
@@ -98,7 +97,6 @@ public class Grcar {
 	private static double[][] matrixprod(double[][] m1, double[][] m2) {
 		double[][] res = new double[m1.length][m2[0].length];
 		if (m1[0].length != m2.length) {
-			// ver excepción
 			return null;
 		}
 		for (int i = 0; i < res.length; i++) {
@@ -106,6 +104,20 @@ public class Grcar {
 				double aux = 0;
 				for (int k = 0; k < m1[0].length; k++) {
 					aux += (m1[i][k] * m2[k][j]);
+				}
+				res[i][j] = aux;
+			}
+		}
+		return res;
+	}
+	
+	private static double[][] matrixRprodQ(double[][] r, double[][] q) {
+		double[][] res = new double[r.length][q[0].length];
+		for (int i = 0; i < res.length; i++) {
+			for (int j = 0; j < res[0].length; j++) {
+				double aux = 0;
+				for (int k = i; k < r[0].length && k <= 2*(Math.floor(j/2)+1); k++) {
+					aux += (r[i][k] * q[k][j]);
 				}
 				res[i][j] = aux;
 			}
@@ -164,7 +176,6 @@ public class Grcar {
 
 	private static double[] sumVec(double[] v1, double[] v2) {
 		double[] res = new double[v1.length];
-		// Ver salir por no tener la misma dim
 		for (int i = 0; i < v1.length; i++) {
 			res[i] = v1[i] + v2[i];
 		}
@@ -172,9 +183,6 @@ public class Grcar {
 	}
 
 	public static List<Complex> eig(double[][] m) {
-		// double last = 0;
-		// if(determinant(m) == 0)
-		// return null;
 		List<Complex> eigs = new ArrayList<Complex>();
 		if (m.length == 2 && m[0].length == 2)
 			return roots(1, -m[0][0] - m[1][1], determinant(m));
@@ -183,7 +191,7 @@ public class Grcar {
 		boolean flag = false;
 		for (int k = 0; k < MAX_ITERATIONS && !flag; k++) {
 			Map<String, double[][]> qr = QR(T);
-			T = matrixprod(qr.get("R"), qr.get("Q"));
+			T = matrixRprodQ(qr.get("R"), qr.get("Q"));
 			
 			if( k % (m.length*CHECK_FREQUENCY) == 0){
 				double[][] current = new double[2][2];
@@ -217,10 +225,9 @@ public class Grcar {
 
 	public static void main(String[] args) {
 		long init = System.currentTimeMillis();
-		int n = 50;
+		int n = 10;
 		System.out.println("GRCAR " + n + "x" + n);
 		double[][] grcar = getGrcarMatrix(n);
-		// printMatrix(grcar);
 		System.out.println("\nAutovalores");
 		List<Complex> eigs = eig(grcar);
 		eigs.sort(new Comparator<Complex>() {
